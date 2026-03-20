@@ -44,8 +44,12 @@ def validate_sequence(seq: str, name: str) -> str:
 
 
 def interpret(delta: float) -> str:
-    if delta < -0.5:
+    if delta < -2.0:
+        return "Strongly deleterious"
+    elif delta < -1.0:
         return "Likely deleterious"
+    elif delta < -0.5:
+        return "Possibly deleterious"
     elif delta > 0.5:
         return "Likely neutral"
     return "Uncertain"

@@ -8,7 +8,7 @@ from modal_app import validate_sequence, interpret
 @pytest.mark.parametrize("seq,name,expected", [
     ("ACGTACGTAC", "ref", "ACGTACGTAC"),
     ("acgtacgtac", "ref", "ACGTACGTAC"),       # lowercase normalised
-    ("  ACGTACGT  ", "ref", "ACGTACGT"),        # whitespace stripped
+    ("  ACGTACGTAC  ", "ref", "ACGTACGTAC"),     # whitespace stripped
     ("ACGTACGTACGT", "alt", "ACGTACGTACGT"),
 ])
 def test_validate_sequence_valid(seq, name, expected):
@@ -31,8 +31,12 @@ def test_validate_sequence_invalid(seq, name, expected_fragment):
 # --- interpret ---
 
 @pytest.mark.parametrize("delta,expected", [
-    (-1.0, "Likely deleterious"),
-    (-0.51, "Likely deleterious"),
+    (-3.0, "Strongly deleterious"),
+    (-2.01, "Strongly deleterious"),
+    (-2.0, "Likely deleterious"),
+    (-1.01, "Likely deleterious"),
+    (-1.0, "Possibly deleterious"),
+    (-0.51, "Possibly deleterious"),
     (-0.5, "Uncertain"),
     (0.0, "Uncertain"),
     (0.5, "Uncertain"),
