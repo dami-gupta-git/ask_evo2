@@ -4,7 +4,7 @@ emoji: 🧬
 colorFrom: green
 colorTo: blue
 sdk: gradio
-sdk_version: "5.0.0"
+sdk_version: "5.29.0"
 app_file: app.py
 pinned: false
 license: mit
@@ -37,7 +37,9 @@ AskEvo2 runs both sequences through Evo2 7B using a teacher-forcing log-likeliho
 
 | Delta | Interpretation |
 |-------|----------------|
-| < −0.5 | Likely deleterious |
+| < −2.0 | Strongly deleterious |
+| −2.0 to −1.0 | Likely deleterious |
+| −1.0 to −0.5 | Possibly deleterious |
 | −0.5 to 0.5 | Uncertain |
 | > 0.5 | Likely neutral |
 
