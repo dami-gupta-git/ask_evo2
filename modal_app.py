@@ -58,7 +58,12 @@ def compute_log_likelihood(model, sequence: str) -> float:
     ).unsqueeze(0).to("cuda:0")  # (1, N)
 
     with torch.no_grad():
-        logits, _ = model(input_ids)  # (1, N, vocab)
+        result = model(input_ids)
+        # Evo2 returns either (logits, state) or ((logits, ...), state)
+        # unwrap until we have the tensor
+        logits = result
+        while isinstance(logits, (tuple, list)):
+            logits = logits[0]  # (1, N, vocab)
 
     log_probs = F.log_softmax(logits, dim=-1)
     token_ids = input_ids[0, 1:].long()  # (N-1,)
@@ -78,6 +83,11 @@ def compute_log_likelihood(model, sequence: str) -> float:
 class Scorer:
     @modal.enter()
     def load_model(self):
+        import logging
+        import warnings
+        logging.disable(logging.WARNING)
+        warnings.filterwarnings("ignore")
+
         import torch as _torch
         _orig = _torch.load
         _torch.load = lambda *a, **kw: _orig(*a, **{**kw, "weights_only": False})
@@ -86,6 +96,8 @@ class Scorer:
         self.model = Evo2("evo2_7b")
         if hasattr(self.model, "eval"):
             self.model.eval()
+
+        logging.disable(logging.NOTSET)
 
     @modal.fastapi_endpoint(method="POST")
     def score_variant(self, body: dict) -> dict:
