@@ -1,6 +1,6 @@
 import re
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 
 import gradio as gr
 import requests
@@ -44,7 +44,8 @@ def validate_inputs(ref_seq: str, alt_seq: str):
 
 def predict(ref_seq: str, alt_seq: str, request: gr.Request):
     t0 = time.time()
-    print(f"[{datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')} UTC] ip={request.client.host} ref={ref_seq.strip()[:50]!r}")
+    now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+    print(f"[{now}] ip={request.client.host} ref={ref_seq.strip()[:50]!r}")
     ref_clean, alt_clean, err = validate_inputs(ref_seq, alt_seq)
     if err:
         return gr.update(value=err, visible=True), "", "", "", ""
