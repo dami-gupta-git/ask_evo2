@@ -114,7 +114,7 @@ with gr.Blocks(title="AskEvo2", css=css) as demo:
         alt_ll_out = gr.Textbox(label="Alternate Log-Likelihood")
         with gr.Column():
             delta_out = gr.Textbox(label="Delta (Alt − Ref)")
-            gr.Markdown("<small>*Delta <= 1.0 suggests the alternate sequence is less likely under Evo2's model of genomic sequence — a rough proxy for deleteriousness. Not a clinical prediction.*</small>")
+            gr.Markdown("<small>*Delta <= -1.0 suggests the alternate sequence is less likely under Evo2's model of genomic sequence — a rough proxy for deleteriousness. Not a clinical prediction.*</small>")
         interp_out = gr.Textbox(label="Interpretation")
 
     gr.Examples(
