@@ -1,3 +1,21 @@
+---
+title: AskEvo2
+emoji: 🧬
+colorFrom: green
+colorTo: blue
+sdk: gradio
+sdk_version: "4.0.0"
+app_file: app.py
+pinned: false
+license: mit
+tags:
+  - biology
+  - genomics
+  - variant-effect-prediction
+  - evo2
+  - bioinformatics
+---
+
 # AskEvo2
 
 Zero-shot variant effect scoring using Evo2 7B. Given a reference and alternate DNA sequence, AskEvo2 computes a delta log-likelihood score to estimate whether a variant is likely deleterious or neutral.
@@ -116,7 +134,7 @@ Response:
 ## Cost notes
 
 - Modal charges for A10G GPU time only while a request is being processed.
-- `container_idle_timeout=300` keeps the container warm for 5 minutes after the last request, avoiding cold starts during active sessions.
+- `scaledown_window=300` keeps the container warm for 5 minutes after the last request, avoiding cold starts during active sessions.
 - First request after idle: ~30–60 second cold start (model loading).
 - Subsequent requests within the warm window: ~5–15 seconds each.
 
