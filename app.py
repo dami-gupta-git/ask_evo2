@@ -1,4 +1,6 @@
 import re
+import time
+from datetime import datetime
 
 import gradio as gr
 import requests
@@ -41,7 +43,8 @@ def validate_inputs(ref_seq: str, alt_seq: str):
 
 
 def predict(ref_seq: str, alt_seq: str, request: gr.Request):
-    print(f"[request] ip={request.client.host} ref={ref_seq.strip()[:50]!r}")
+    t0 = time.time()
+    print(f"[{datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')} UTC] ip={request.client.host} ref={ref_seq.strip()[:50]!r}")
     ref_clean, alt_clean, err = validate_inputs(ref_seq, alt_seq)
     if err:
         return gr.update(value=err, visible=True), "", "", "", ""
@@ -62,6 +65,8 @@ def predict(ref_seq: str, alt_seq: str, request: gr.Request):
         return gr.update(value=f"Error: {e}", visible=True), "", "", "", ""
 
     data = resp.json()
+    elapsed = time.time() - t0
+    print(f"[done] elapsed={elapsed:.2f}s delta={data['delta']} interpretation={data['interpretation']!r}")
     return (
         gr.update(value="", visible=False),
         f"{data['ref_ll']:.4f}",
