@@ -82,6 +82,7 @@ def compute_log_likelihood(model, sequence: str) -> float:
     gpu="A10G",
     volumes={"/weights": vol},
     scaledown_window=300,
+    keep_warm=1,
     image=image,
 )
 class Scorer:
