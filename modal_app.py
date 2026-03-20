@@ -104,9 +104,13 @@ class Scorer:
         logging.disable(logging.NOTSET)
 
     @modal.fastapi_endpoint(method="POST")
-    def score_variant(self, body: dict) -> dict:
-        ref_seq = validate_sequence(body.get("ref_sequence", ""), "ref_sequence")
-        alt_seq = validate_sequence(body.get("alt_sequence", ""), "alt_sequence")
+    def score_variant(self, body: dict):
+        from fastapi.responses import JSONResponse
+        try:
+            ref_seq = validate_sequence(body.get("ref_sequence", ""), "ref_sequence")
+            alt_seq = validate_sequence(body.get("alt_sequence", ""), "alt_sequence")
+        except ValueError as e:
+            return JSONResponse(status_code=422, content={"detail": str(e)})
 
         try:
             ref_ll = compute_log_likelihood(self.model, ref_seq)

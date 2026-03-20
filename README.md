@@ -148,5 +148,5 @@ Response:
 - **No strand awareness.** The model scores the sequence as given. Reverse-complement effects are not considered.
 - **No population frequency data.** Common variants can score as deleterious; rare variants can score as neutral.
 - **Context window matters.** For long sequences, the local nucleotide context around a variant drives the score. Results may differ depending on how much flanking sequence is included.
-- **Not calibrated.** The −0.5 / +0.5 thresholds are heuristics. Do not use these scores for clinical decision-making.
+- **Not calibrated.** Delta log-likelihood reflects sequence-level probability, not functional impact directly. Synonymous variants may still receive non-zero deltas. Interpretation thresholds are approximate and not clinically validated.
 - **Research use only.** AskEvo2 is a research prototype. It has not been validated for clinical, diagnostic, or regulatory purposes.
