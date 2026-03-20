@@ -43,7 +43,7 @@ def validate_inputs(ref_seq: str, alt_seq: str):
 def predict(ref_seq: str, alt_seq: str):
     ref_clean, alt_clean, err = validate_inputs(ref_seq, alt_seq)
     if err:
-        return err, "", "", ""
+        return gr.update(value=err, visible=True), "", "", "", ""
 
     try:
         resp = requests.post(
@@ -54,14 +54,15 @@ def predict(ref_seq: str, alt_seq: str):
         resp.raise_for_status()
     except requests.exceptions.Timeout:
         return (
-            "Error: Request timed out. The model may be cold-starting — retry in 30s.",
-            "", "", "",
+            gr.update(value="Error: Request timed out. The model may be cold-starting — retry in 30s.", visible=True),
+            "", "", "", "",
         )
     except requests.exceptions.RequestException as e:
-        return f"Error: {e}", "", "", ""
+        return gr.update(value=f"Error: {e}", visible=True), "", "", "", ""
 
     data = resp.json()
     return (
+        gr.update(value="", visible=False),
         f"{data['ref_ll']:.4f}",
         f"{data['alt_ll']:.4f}",
         f"{data['delta']:.4f}",
@@ -86,8 +87,16 @@ with gr.Blocks(title="AskEvo2") as demo:
         )
 
     with gr.Row():
-        run_btn = gr.Button("Score Variant", variant="primary")
+        run_btn = gr.Button("Score Variant", variant="primary", elem_id="score-btn")
         clear_btn = gr.Button("Clear")
+
+    error_out = gr.Textbox(
+        visible=False,
+        show_label=False,
+        interactive=False,
+        elem_id="error-out",
+    )
+    gr.HTML("<style>#score-btn { background: #60a5fa !important; border-color: #60a5fa !important; } #score-btn:hover { background: #3b82f6 !important; border-color: #3b82f6 !important; } #error-out textarea { color: #b91c1c !important; }</style>")
 
     with gr.Row():
         ref_ll_out = gr.Textbox(label="Reference Log-Likelihood")
@@ -104,11 +113,11 @@ with gr.Blocks(title="AskEvo2") as demo:
     run_btn.click(
         fn=predict,
         inputs=[ref_input, alt_input],
-        outputs=[ref_ll_out, alt_ll_out, delta_out, interp_out],
+        outputs=[error_out, ref_ll_out, alt_ll_out, delta_out, interp_out],
     )
     clear_btn.click(
-        fn=lambda: ("", "", "", "", "", ""),
-        outputs=[ref_input, alt_input, ref_ll_out, alt_ll_out, delta_out, interp_out],
+        fn=lambda: (gr.update(value="", visible=False), "", "", "", "", ""),
+        outputs=[error_out, ref_input, alt_input, ref_ll_out, alt_ll_out, delta_out, interp_out],
     )
 
 if __name__ == "__main__":
