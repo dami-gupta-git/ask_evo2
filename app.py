@@ -40,7 +40,8 @@ def validate_inputs(ref_seq: str, alt_seq: str):
     return ref_seq.strip().upper(), alt_seq.strip().upper(), None
 
 
-def predict(ref_seq: str, alt_seq: str):
+def predict(ref_seq: str, alt_seq: str, request: gr.Request):
+    print(f"[request] ip={request.client.host} ref={ref_seq.strip()[:50]!r}")
     ref_clean, alt_clean, err = validate_inputs(ref_seq, alt_seq)
     if err:
         return gr.update(value=err, visible=True), "", "", "", ""
