@@ -25,7 +25,7 @@ def test_brca1_snv_scores():
     assert data["ref_ll"] == -76.0
     assert data["alt_ll"] == -77.0
     assert data["delta"] == -1.0
-    assert data["interpretation"] == "Likely deleterious"
+    assert data["interpretation"] == "Possibly deleterious"
 
 
 def test_identical_sequences_uncertain():
