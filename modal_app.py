@@ -9,8 +9,15 @@ app = modal.App("askevo2")
 vol = modal.Volume.from_name("evo2-weights", create_if_missing=True)
 
 image = (
-    modal.Image.debian_slim()
-    .pip_install("evo2", "torch", "fastapi[standard]")
+    modal.Image.from_registry(
+        "nvidia/cuda:12.8.0-devel-ubuntu22.04",
+        add_python="3.11",
+    )
+    .apt_install("git")
+    .pip_install("torch==2.7.1", index_url="https://download.pytorch.org/whl/cu128")
+    .pip_install("packaging", "ninja", "setuptools", "wheel")
+    .pip_install("flash-attn==2.8.0.post2", extra_options="--no-build-isolation")
+    .pip_install("evo2", "fastapi[standard]")
     .env({"HF_HOME": "/weights"})
 )
 
