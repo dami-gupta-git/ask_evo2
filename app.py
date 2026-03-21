@@ -87,7 +87,8 @@ css = """
 
 with gr.Blocks(title="AskEvo2", css=css) as demo:
     gr.Markdown("# AskEvo2 — Zero-shot variant effect scoring powered by Evo2 7B")
-    gr.Markdown("Compare a reference and alternate DNA sequence to estimate the functional impact of a variant using Evo2's zero-shot log-likelihood scoring.")
+    gr.Markdown("Arc Institute Evo2 (https://arcinstitute.org/tools/evo)")
+    gr.Markdown("Compare a reference and alternate DNA sequence : Estimate the functional impact using Evo2's zero-shot log-likelihood scoring.")
     gr.Markdown("> **For research use only. Not a clinical tool.**")
 
     with gr.Row(elem_classes="compact-error"):
@@ -112,21 +113,34 @@ with gr.Blocks(title="AskEvo2", css=css) as demo:
     with gr.Row():
         ref_ll_out = gr.Textbox(label="Reference Log-Likelihood")
         alt_ll_out = gr.Textbox(label="Alternate Log-Likelihood")
-        with gr.Column():
-            delta_out = gr.Textbox(label="Delta (Alt − Ref)")
-            gr.Markdown("<small>*Delta <= -1.0 suggests the alternate sequence is less likely under Evo2's model of genomic sequence — a rough proxy for deleteriousness. Not a clinical prediction.*</small>")
+        delta_out = gr.Textbox(label="Delta (Alt − Ref)")
         interp_out = gr.Textbox(label="Interpretation")
 
-    gr.Examples(
-        examples=[[BRCA1_REF, BRCA1_ALT]],
-        inputs=[ref_input, alt_input],
-        label="Example: BRCA1 synonymous SNV (C→G at position 60)",
-    )
+    with gr.Accordion("► How to read the scores", open=False):
+        gr.Markdown(
+            "Log-likelihood measures how probable a sequence is under Evo2's learned model of genomic DNA. "
+            "Higher values (less negative) indicate a more probable sequence.\n\n"
+            "**Δ (Alt − Ref):** Difference in log-likelihood.\n"
+            "- Negative Δ → Alternate less probable → rough proxy for deleterious/functional impact\n"
+            "- Positive Δ → Alternate at least as probable → likely neutral/benign\n\n"
+            "**Thresholds:**\n"
+            "- Δ < −0.5 → *Likely deleterious*\n"
+            "- Δ > 0.5 → *Likely neutral*\n"
+            "- Otherwise → *Uncertain*\n\n"
+            "*For research use only — not a clinical prediction.*"
+        )
+
+    gr.Markdown("**Example:** BRCA1 synonymous SNV (C→G at position 60)")
+    load_btn = gr.Button("Load Example")
 
     run_btn.click(
         fn=predict,
         inputs=[ref_input, alt_input],
         outputs=[error_out, ref_ll_out, alt_ll_out, delta_out, interp_out],
+    )
+    load_btn.click(
+        fn=lambda: (BRCA1_REF, BRCA1_ALT),
+        outputs=[ref_input, alt_input],
     )
     clear_btn.click(
         fn=lambda: ("", "", "", "", "", "", ""),
