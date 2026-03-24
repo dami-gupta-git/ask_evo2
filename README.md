@@ -79,7 +79,7 @@ https://your-username--askevo2-scorer-score-variant.modal.run
 
 **4. Set the endpoint URL in `app.py`**
 
-Open [app.py](src/app.py) and replace the placeholder:
+Open [app.py](app.py) and replace the placeholder:
 ```python
 MODAL_ENDPOINT_URL = "https://your-username--askevo2-scorer-score-variant.modal.run"
 ```
