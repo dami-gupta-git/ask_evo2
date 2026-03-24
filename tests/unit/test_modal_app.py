@@ -1,6 +1,6 @@
 import pytest
 
-from modal_app import validate_sequence, interpret
+from src.modal_app import validate_sequence, interpret
 
 
 # --- validate_sequence ---

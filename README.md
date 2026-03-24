@@ -79,7 +79,7 @@ https://your-username--askevo2-scorer-score-variant.modal.run
 
 **4. Set the endpoint URL in `app.py`**
 
-Open [app.py](app.py) and replace the placeholder:
+Open [app.py](src/app.py) and replace the placeholder:
 ```python
 MODAL_ENDPOINT_URL = "https://your-username--askevo2-scorer-score-variant.modal.run"
 ```
@@ -139,6 +139,91 @@ Response:
 - `scaledown_window=300` keeps the container warm for 5 minutes after the last request, avoiding cold starts during active sessions.
 - First request after idle: ~30–60 second cold start (model loading).
 - Subsequent requests within the warm window: ~5–15 seconds each.
+
+---
+
+## Repository layout
+
+```
+ask_evo2/
+├── src/
+│   ├── modal_app.py          # Modal GPU backend: Evo2 model, log-likelihood, POST endpoint
+│   └── app.py                # Gradio frontend: input validation, calls Modal endpoint
+│
+├── scorer/
+│   ├── client.py             # Re-exports score_variant() from scripts/client.py
+│   ├── clinvar.py            # Load ClinVar variant_summary.txt, filter BRCA1 SNVs on GRCh38
+│   └── sequence.py           # Fetch hg38 flanking sequence from UCSC; validate ref base
+│
+├── scripts/
+│   ├── client.py             # score_variant(ref_seq, alt_seq) — POSTs to Modal endpoint
+│   ├── score_brca1_from_json.py   # Reads data/brca1_variants.json, scores all 40 variants,
+│   │                              # writes data/brca1_scored.json
+│   └── run_brca1_validation.py    # Alternative: loads from ClinVar TSV, fetches sequences
+│                                  # on-the-fly, scores, writes brca1_validation_results.csv
+│
+├── data/
+│   ├── brca1_variants.json   # 40 BRCA1 SNVs (20 Pathogenic, 20 Benign) from ClinVar + UCSC
+│   │                         # Fields: name, clinical_significance, chromosome, position,
+│   │                         #         ref_allele, alt_allele, ref_seq (1001bp), alt_seq (1001bp)
+│   └── brca1_scored.json     # Same 40 variants with scoring results appended
+│                             # Additional fields: ref_ll, alt_ll, delta, interpretation
+│
+├── map/
+│   ├── draw_roc.py           # Simple ROC curve — reads from brca1_scored.json
+│   │                         # Output: map/brca1_roc.png
+│   ├── draw_roc_dashboard.py # Dashboard layout: stat cards + ROC + delta histogram
+│   │                         # Output: map/brca1_roc_dashboard.png
+│   ├── brca1_roc.png         # ROC curve plot
+│   └── brca1_roc_dashboard.png  # Full dashboard plot (AUC 0.92)
+│
+├── tests/
+│   ├── unit/
+│   │   ├── test_scorer.py    # Tests for sequence fetch and ClinVar loading (no Modal calls)
+│   │   ├── test_modal_app.py # Unit tests for compute_log_likelihood and validate_sequence
+│   │   └── test_app.py       # Gradio frontend unit tests
+│   └── integration/
+│       ├── test_endpoint.py  # End-to-end test: hits live Modal endpoint
+│       └── test_brca1_validation.py  # End-to-end: scores variants, checks Pathogenic < Benign mean delta
+│
+├── requirements.txt          # Local deps: gradio, requests, modal (NOT evo2/torch)
+└── runtime.txt               # Python version for HuggingFace Spaces
+```
+
+### Key data flows
+
+**Scoring a variant:**
+```
+brca1_variants.json
+  → scripts/score_brca1_from_json.py
+  → scripts/client.py → POST → src/modal_app.py (Modal GPU, Evo2 7B)
+  → brca1_scored.json
+```
+
+**Building the variant dataset:**
+```
+ClinVar API (esearch/esummary) → 40 BRCA1 SNVs
+UCSC hg38 (getData/sequence)   → 1001bp flanking sequences, ref base verified
+  → data/brca1_variants.json
+```
+
+**Visualisation:**
+```
+data/brca1_scored.json → map/draw_roc_dashboard.py → map/brca1_roc_dashboard.png
+```
+
+---
+
+## Validation results (BRCA1, 40 variants)
+
+| Class | n | Mean delta |
+|-------|---|-----------|
+| Pathogenic | 20 | −38.1 |
+| Benign | 20 | −3.5 |
+
+AUC: **0.92**
+
+Variants: 20 Pathogenic nonsense/splice SNVs, 20 Benign intronic/synonymous SNVs — all GRCh38, 1001bp context (500bp flanking each side).
 
 ---
 

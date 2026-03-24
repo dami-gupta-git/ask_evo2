@@ -69,7 +69,7 @@ def compute_log_likelihood(model, sequence: str) -> float:
         while isinstance(logits, (tuple, list)):
             logits = logits[0]  # (1, N, vocab)
 
-    log_probs = F.log_softmax(logits, dim=-1)
+    log_probs = F.log_softmax(logits.float(), dim=-1)
     token_ids = input_ids[0, 1:].long()  # (N-1,)
     per_token_lp = log_probs[0, :-1, :].gather(
         dim=-1,
@@ -81,8 +81,6 @@ def compute_log_likelihood(model, sequence: str) -> float:
 @app.cls(
     gpu="A10G",
     volumes={"/weights": vol},
-    scaledown_window=300,
-    keep_warm=1,
     image=image,
 )
 class Scorer:
@@ -128,3 +126,8 @@ class Scorer:
             "delta": delta,
             "interpretation": interpret(delta),
         }
+
+def main():
+    scorer = Scorer()
+    scorer.load_model()
+    scorer.score_variant({"ref_sequence": "ACGT"})
