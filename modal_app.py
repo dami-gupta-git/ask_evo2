@@ -43,18 +43,6 @@ def validate_sequence(seq: str, name: str) -> str:
     return seq
 
 
-def interpret(delta: float) -> str:
-    if delta < -2.0:
-        return "Strongly deleterious"
-    elif delta < -1.0:
-        return "Likely deleterious"
-    elif delta < -0.5:
-        return "Possibly deleterious"
-    elif delta > 0.5:
-        return "Likely neutral"
-    return "Uncertain"
-
-
 def compute_log_likelihood(model, sequence: str) -> float:
     input_ids = torch.tensor(
         model.tokenizer.tokenize(sequence),
@@ -81,6 +69,7 @@ def compute_log_likelihood(model, sequence: str) -> float:
 @app.cls(
     gpu="A10G",
     volumes={"/weights": vol},
+    keep_warm=1,
     image=image,
 )
 class Scorer:
@@ -124,7 +113,6 @@ class Scorer:
             "ref_ll": ref_ll,
             "alt_ll": alt_ll,
             "delta": delta,
-            "interpretation": interpret(delta),
         }
 
 def main():

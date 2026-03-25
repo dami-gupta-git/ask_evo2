@@ -12,7 +12,7 @@ def score_variant(ref_sequence: str, alt_sequence: str) -> dict:
             "alt_sequence": alt_sequence,
         },
         timeout=300,
-    )w
+    )
     response.raise_for_status()
     return response.json()
 

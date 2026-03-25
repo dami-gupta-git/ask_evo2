@@ -48,7 +48,7 @@ def predict(ref_seq: str, alt_seq: str, request: gr.Request):
     print(f"[{now}] ip={request.client.host} ref={ref_seq.strip()[:50]!r}")
     ref_clean, alt_clean, err = validate_inputs(ref_seq, alt_seq)
     if err:
-        return gr.update(value=f'<p style="color:#b91c1c;margin:0">⚠ {err}</p>'), "", "", "", ""
+        return gr.update(value=f'<p style="color:#b91c1c;margin:0">⚠ {err}</p>'), "", "", ""
 
     try:
         resp = requests.post(
@@ -60,20 +60,19 @@ def predict(ref_seq: str, alt_seq: str, request: gr.Request):
     except requests.exceptions.Timeout:
         return (
             gr.update(value='<p style="color:#b91c1c;margin:0">⚠ Request timed out. The model may be cold-starting — retry in 30s.</p>'),
-            "", "", "", "",
+            "", "", "",
         )
     except requests.exceptions.RequestException as e:
-        return gr.update(value=f'<p style="color:#b91c1c;margin:0">⚠ {e}</p>'), "", "", "", ""
+        return gr.update(value=f'<p style="color:#b91c1c;margin:0">⚠ {e}</p>'), "", "", ""
 
     data = resp.json()
     elapsed = time.time() - t0
-    print(f"[done] elapsed={elapsed:.2f}s delta={data['delta']} interpretation={data['interpretation']!r}")
+    print(f"[done] elapsed={elapsed:.2f}s delta={data['delta']}")
     return (
         gr.update(value=""),
         f"{data['ref_ll']:.4f}",
         f"{data['alt_ll']:.4f}",
         f"{data['delta']:.4f}",
-        data["interpretation"],
     )
 
 
@@ -114,19 +113,14 @@ with gr.Blocks(title="AskEvo2", css=css) as demo:
         ref_ll_out = gr.Textbox(label="Reference Log-Likelihood")
         alt_ll_out = gr.Textbox(label="Alternate Log-Likelihood")
         delta_out = gr.Textbox(label="Delta (Alt − Ref)")
-        interp_out = gr.Textbox(label="Interpretation")
 
     with gr.Accordion("► How to read the scores", open=False):
         gr.Markdown(
-            "Log-likelihood measures how probable a sequence is under Evo2's learned model of genomic DNA. "
-            "Higher values (less negative) indicate a more probable sequence.\n\n"
-            "**Δ (Alt − Ref):** Difference in log-likelihood.\n"
-            "- Negative Δ → Alternate less probable → rough proxy for deleterious/functional impact\n"
-            "- Positive Δ → Alternate at least as probable → likely neutral/benign\n\n"
-            "**Thresholds:**\n"
-            "- Δ < −0.5 → *Likely deleterious*\n"
-            "- Δ > 0.5 → *Likely neutral*\n"
-            "- Otherwise → *Uncertain*\n\n"
+            "Log-likelihood measures how probable a sequence is under Evo2's learned model of genomic DNA.\n\n"
+            "**Δ (Alt − Ref):** Difference in log-likelihood between the alternate and reference sequences. "
+            "More negative values are associated with pathogenic variants.\n\n"
+            "- More negative Δ → Greater likelihood of pathogenicity \n"
+            "- Near zero Δ → Model sees little difference between ref and alt\n\n"
             "*For research use only — not a clinical prediction.*"
         )
 
@@ -136,15 +130,15 @@ with gr.Blocks(title="AskEvo2", css=css) as demo:
     run_btn.click(
         fn=predict,
         inputs=[ref_input, alt_input],
-        outputs=[error_out, ref_ll_out, alt_ll_out, delta_out, interp_out],
+        outputs=[error_out, ref_ll_out, alt_ll_out, delta_out],
     )
     load_btn.click(
         fn=lambda: (BRCA1_REF, BRCA1_ALT),
         outputs=[ref_input, alt_input],
     )
     clear_btn.click(
-        fn=lambda: ("", "", "", "", "", "", ""),
-        outputs=[error_out, ref_input, alt_input, ref_ll_out, alt_ll_out, delta_out, interp_out],
+        fn=lambda: ("", "", "", "", "", ""),
+        outputs=[error_out, ref_input, alt_input, ref_ll_out, alt_ll_out, delta_out],
     )
 
 if __name__ == "__main__":
