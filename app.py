@@ -87,7 +87,7 @@ css = """
 with gr.Blocks(title="AskEvo2", css=css) as demo:
     gr.Markdown("# AskEvo2 — Zero-shot variant effect scoring powered by Evo2 7B")
     gr.Markdown("Arc Institute Evo2 (https://arcinstitute.org/tools/evo)")
-    gr.Markdown("Compare a reference and alternate DNA sequence : Estimate the functional impact using Evo2's zero-shot log-likelihood scoring.")
+    gr.Markdown("Compare a reference and alternate DNA sequence using Evo2's zero-shot log-likelihood scoring.")
     gr.Markdown("> **For research use only. Not a clinical tool.**")
 
     with gr.Row(elem_classes="compact-error"):
