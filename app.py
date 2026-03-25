@@ -239,7 +239,6 @@ with gr.Blocks(title="AskEvo2", css=css) as demo:
                 batch_error_out = gr.HTML(value="", elem_id="batch-error-out")
 
             with gr.Row():
-                gr.Markdown("**Upload your CSV file** — need a template?")
                 gr.DownloadButton(label="Example File", value="example_batch.csv", elem_id="download-example-btn")
 
             batch_file = gr.File(label="Upload CSV", file_types=[".csv"])
