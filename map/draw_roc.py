@@ -8,7 +8,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 from sklearn.metrics import roc_curve, auc
 
-# draws roc
+
 def main():
     parser = argparse.ArgumentParser(description="Draw ROC curve from scored variants JSON.")
     parser.add_argument("results", type=Path, help="Path to scored variants JSON file")
